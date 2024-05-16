@@ -2,14 +2,16 @@
 from ultralytics import YOLO
 import cv2
 from utils.jsonify import *
+from utils.draw import *
 
 ## Initiate model and image source
-video_path = "rtsp://admin:admin@172.17.1.220:1935"
+video_path = "rtsp://admin:admin@192.168.115.173:1945"
 # pipeline = "rtspsrc location=rtsp://admin:admin@192.168.191.47:1935 latency=100 ! queue ! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! videoscale ! video/x-raw,width=640,height=480,format=BGR ! appsink drop=1"
 # video_path = 0
+class_names = open('/home/sri/BtechFinalYearProject/model/labels.txt', 'r').read().splitlines()
 model = YOLO(r'/home/sri/Downloads/project/cv/best.pt')
 cap = cv2.VideoCapture(video_path)
-cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
 
 ## Weed Flag
 curr = False
@@ -17,7 +19,7 @@ prev = False
 flag = False
 
 ## Open JSON file for writing
-json_file = open('frames.json', 'w')
+json_file = open('/home/sri/BtechFinalYearProject/json_files/frames.json', 'w')
 
 ## Loop through the frames of the video
 while True:
@@ -37,10 +39,12 @@ while True:
             xmax = int(bbox[2])
             ymax = int(bbox[3])
             conf = cnf
-            
+            class_name = class_names[int(cs)]
             ## Setting the confidence Threshold as 20%
+            
             if cnf > 20:
-                cv2.rectangle(frame,(xmin,ymin),(xmax,ymax),(0,255,0),2)
+                plot_one_box(bbox,frame,class_name,2)
+                # cv2.rectangle(frame,(xmin,ymin),(xmax,ymax),(0,255,0),2)
                 temp = True
                 curr = temp
                 if curr != prev:
